@@ -15,11 +15,10 @@ module OmniAuth
       }
 
       option :token_params, {
-        resource: 'https://graph.microsoft.com/'        
       }
 
       option :scope, "https://graph.microsoft.com/profile https://graph.microsoft.com/email https://graph.microsoft.com/User.Read https://graph.microsoft.com/User.ReadBasic.All"
-      
+
       uid { raw_info["id"] }
 
       info do
@@ -40,7 +39,7 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= access_token.get(token_params.resource + 'v1.0/me').parsed
+        @raw_info ||= access_token.get('https://graph.microsoft.com/v1.0/me').parsed
       end
     end
   end

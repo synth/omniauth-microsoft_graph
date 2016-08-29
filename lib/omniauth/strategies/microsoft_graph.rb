@@ -17,7 +17,7 @@ module OmniAuth
       option :token_params, {
       }
 
-      option :scope, "https://graph.microsoft.com/profile https://graph.microsoft.com/email https://graph.microsoft.com/User.Read https://graph.microsoft.com/User.ReadBasic.All"
+      option :scope, "offline_access https://graph.microsoft.com/User.Read"
 
       uid { raw_info["id"] }
 

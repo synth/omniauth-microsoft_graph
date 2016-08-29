@@ -41,6 +41,10 @@ module OmniAuth
       def raw_info
         @raw_info ||= access_token.get('https://graph.microsoft.com/v1.0/me').parsed
       end
+
+      def callback_url
+        options[:callback_url] || full_host + script_name + callback_path
+      end      
     end
   end
 end

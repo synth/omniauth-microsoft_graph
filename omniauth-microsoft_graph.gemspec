@@ -5,7 +5,7 @@ require 'omniauth/microsoft_graph/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "omniauth-microsoft_graph"
-  spec.version       = Omniauth::Office365::VERSION
+  spec.version       = Omniauth::MicrosoftGraph::VERSION
   spec.authors       = ["Peter Philips"]
   spec.email         = ["pete@p373.net"]
   spec.summary       = %q{omniauth provider for Microsoft Graph}

@@ -11,7 +11,7 @@ module OmniAuth
         authorize_url: '/common/oauth2/v2.0/authorize'
       }
 
-      option :authorize_options, %i[display score auth_type scope prompt login_hint domain_hint response_mode state]
+      option :authorize_options, %i[display score auth_type scope prompt login_hint domain_hint response_mode]
 
       uid { raw_info["id"] }
 
@@ -47,7 +47,7 @@ module OmniAuth
       end
 
       def full_name
-        [raw_info["givenName"], raw_info["surname"]].compact.join(' ')
+        raw_info.values_at("givenName", "surname").compact.join(' ')
       end
     end
   end

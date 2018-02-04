@@ -38,6 +38,10 @@ module OmniAuth
         }
       end
 
+      def callback_url
+        full_host + script_name + callback_path
+      end
+
       def raw_info
         @raw_info ||= access_token.get(authorize_params.resource + 'v1.0/me').parsed
       end

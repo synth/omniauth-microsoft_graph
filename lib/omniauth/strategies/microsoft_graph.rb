@@ -31,6 +31,10 @@ module OmniAuth
           'params' => access_token.params
         }
       end
+      
+      def callback_url
+        options[:redirect_uri] || (full_host + script_name + callback_path)
+      end
 
       def raw_info
         @raw_info ||= access_token.get('https://graph.microsoft.com/v1.0/me').parsed
@@ -47,7 +51,7 @@ module OmniAuth
       end
 
       def full_name
-        raw_info.values_at("givenName", "surname").compact.join(' ')
+        raw_info["displayName"].presence || raw_info.values_at("givenName", "surname").compact.join(' ')
       end
     end
   end

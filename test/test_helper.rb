@@ -16,6 +16,7 @@ class StrategyTestCase < Minitest::Test
 
     @client_id = '123'
     @client_secret = '53cr3tz'
+    @options = {}
   end
 
   def strategy

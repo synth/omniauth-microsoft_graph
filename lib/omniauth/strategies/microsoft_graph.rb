@@ -53,6 +53,14 @@ module OmniAuth
       def full_name
         raw_info["displayName"].presence || raw_info.values_at("givenName", "surname").compact.join(' ')
       end
+
+      def build_access_token
+        if request.params['access_token']
+          ::OAuth2::AccessToken.from_hash(client, request.params.dup)
+        else
+          super
+        end
+      end
     end
   end
 end

@@ -27,7 +27,6 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 end
 ```
 
-
 ## Contributing
 
 1. Fork it ( https://github.com/synth/omniauth-microsoft_graph/fork )

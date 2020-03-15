@@ -6,22 +6,28 @@ module OmniAuth
       option :name, :microsoft_graph
 
       option :client_options, {
-        site:          'https://login.microsoftonline.com',
-        token_url:     '/common/oauth2/v2.0/token',
-        authorize_url: '/common/oauth2/v2.0/authorize'
+        site:          'https://login.microsoftonline.com/',
+        token_url:     'common/oauth2/v2.0/token',
+        authorize_url: 'common/oauth2/v2.0/authorize'
       }
 
-      option :authorize_options, %i[display score auth_type scope prompt login_hint domain_hint response_mode]
+      option :authorize_params, {
+      }
+
+      option :token_params, {
+      }
+
+      option :scope, "offline_access https://graph.microsoft.com/User.Read"
 
       uid { raw_info["id"] }
 
       info do
         {
-          email:      raw_info["mail"] || raw_info["userPrincipalName"],
-          first_name: raw_info["givenName"],
-          last_name:  raw_info["surname"],
-          name:       full_name,
-          nickname:   raw_info["userPrincipalName"],
+          'email' => raw_info["mail"],
+          'first_name' => raw_info["givenName"],
+          'last_name' => raw_info["surname"],
+          'name' => [raw_info["givenName"], raw_info["surname"]].join(' '),
+          'nickname' => raw_info["displayName"],
         }
       end
 
@@ -31,36 +37,14 @@ module OmniAuth
           'params' => access_token.params
         }
       end
-      
-      def callback_url
-        options[:redirect_uri] || (full_host + script_name + callback_path)
-      end
 
       def raw_info
         @raw_info ||= access_token.get('https://graph.microsoft.com/v1.0/me').parsed
       end
 
-      def authorize_params
-        super.tap do |params|
-          %w[display score auth_type].each do |v|
-            if request.params[v]
-              params[v.to_sym] = request.params[v]
-            end
-          end
-        end
-      end
-
-      def full_name
-        raw_info["displayName"].presence || raw_info.values_at("givenName", "surname").compact.join(' ')
-      end
-
-      def build_access_token
-        if request.params['access_token']
-          ::OAuth2::AccessToken.from_hash(client, request.params.dup)
-        else
-          super
-        end
-      end
+      def callback_url
+        options[:callback_url] || full_host + script_name + callback_path
+      end      
     end
   end
 end

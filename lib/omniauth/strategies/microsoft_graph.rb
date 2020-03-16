@@ -102,6 +102,10 @@ module OmniAuth
         deep_symbolize(options.auth_token_params || {})
       end
 
+      def get_token_options(redirect_uri = '')
+        { redirect_uri: redirect_uri }.merge(token_params.to_hash(symbolize_keys: true))
+      end
+
       def get_scope(params)
         raw_scope = params[:scope] || DEFAULT_SCOPE
         scope_list = raw_scope.split(' ').map { |item| item.split(',') }.flatten

@@ -441,5 +441,4 @@ describe OmniAuth::Strategies::MicrosoftGraph do
     end
   end
 
-
 end

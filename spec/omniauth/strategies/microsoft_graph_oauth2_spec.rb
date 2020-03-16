@@ -4,7 +4,6 @@ require 'spec_helper'
 require 'json'
 require 'omniauth_microsoft_graph'
 require 'stringio'
-require 'byebug'
 
 describe OmniAuth::Strategies::MicrosoftGraph do
   let(:request) { double('Request', params: {}, cookies: {}, env: {}) }

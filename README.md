@@ -21,10 +21,17 @@ Or install it yourself as:
 
 ## Usage
 
+#### Configuration
 ```ruby
 Rails.application.config.middleware.use OmniAuth::Builder do
   provider :microsoft_graph, ENV['AZURE_APPLICATION_CLIENT_ID'], ENV['AZURE_APPLICATION_CLIENT_SECRET']
 end
+```
+
+#### Login Hint
+Just add {login_hint: "email@example.com"} to your url generation to form:
+```ruby
+/auth/microsoft_graph?login_hint=email@example.com
 ```
 
 ## Contributing

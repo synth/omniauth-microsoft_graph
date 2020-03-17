@@ -151,7 +151,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
       end
 
       it 'should set default scope to email,profile' do
-        expect(subject.authorize_params['scope']).to eq('openid email profile https://graph.microsoft.com/User.Read')
+        expect(subject.authorize_params['scope']).to eq('offline_access openid email profile https://graph.microsoft.com/User.Read')
       end
 
       it 'should support space delimited scopes' do

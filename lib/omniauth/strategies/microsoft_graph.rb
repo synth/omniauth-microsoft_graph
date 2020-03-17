@@ -5,7 +5,7 @@ module OmniAuth
     class MicrosoftGraph < OmniAuth::Strategies::OAuth2
       BASE_SCOPE_URL = 'https://graph.microsoft.com/'
       BASE_SCOPES = %w[offline_access openid email profile].freeze
-      DEFAULT_SCOPE = 'openid email profile User.Read'.freeze
+      DEFAULT_SCOPE = 'offline_access openid email profile User.Read'.freeze
 
       option :name, :microsoft_graph
 

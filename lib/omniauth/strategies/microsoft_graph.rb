@@ -26,18 +26,19 @@ module OmniAuth
       uid { raw_info["id"] }
 
       info do
+        org = org_info["value"].first
         {
           'email' => raw_info["mail"],
-          'first_name' => raw_info["givenName"],
-          'last_name' => raw_info["surname"],
-          'name' => [raw_info["givenName"], raw_info["surname"]].join(' '),
-          'nickname' => raw_info["displayName"],
+          'name' => raw_info["displayName"],
+          'organization_name' => org["displayName"],
+          'organization_id' => org["id"]
         }
       end
 
       extra do
         {
           'raw_info' => raw_info,
+          'org_info' => org_info,
           'params' => access_token.params,
           'aud' => options.client_id
         }
@@ -54,15 +55,19 @@ module OmniAuth
 
           session['omniauth.state'] = params[:state] if params[:state]
         end
-      end     
+      end
 
       def raw_info
         @raw_info ||= access_token.get('https://graph.microsoft.com/v1.0/me').parsed
       end
 
+      def org_info
+        @org_info ||= access_token.get('https://graph.microsoft.com/v1.0/organization').parsed
+      end
+
       def callback_url
         options[:callback_url] || full_host + script_name + callback_path
-      end  
+      end
 
       def custom_build_access_token
         access_token = get_access_token(request)
@@ -119,7 +124,7 @@ module OmniAuth
         raw_response = client.request(:get, 'https://graph.microsoft.com/v1.0/me',
                                       params: { access_token: access_token }).parsed
         (raw_response['aud'] == options.client_id) || options.authorized_client_ids.include?(raw_response['aud'])
-      end              
+      end
     end
   end
 end

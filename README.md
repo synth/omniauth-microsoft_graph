@@ -1,4 +1,5 @@
-# Omniauth::MicrosoftGraph [![Build Status](https://travis-ci.org/synth/omniauth-microsoft_graph.svg?branch=master)](https://travis-ci.org/synth/omniauth-microsoft_graph)
+# Omniauth::MicrosoftGraph ![ruby workflow](https://github.com/synth/omniauth-microsoft_graph/actions/workflows/ruby.yml/badge.svg)
+
 
 Microsoft Graph OAuth2 Strategy for OmniAuth.
 Can be used to authenticate with Office365 or other MS services, and get a token for the Microsoft Graph Api, formerly the Office365 Unified Api.

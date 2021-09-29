@@ -243,12 +243,18 @@ describe OmniAuth::Strategies::MicrosoftGraph do
 
   describe '#callback_path' do
     it 'has the correct default callback path' do
+      allow(subject).to receive(:script_name).and_return('')
       expect(subject.callback_path).to eq('/auth/microsoft_graph/callback')
     end
 
     it 'should set the callback_path parameter if present' do
       @options = { callback_path: '/auth/foo/callback' }
       expect(subject.callback_path).to eq('/auth/foo/callback')
+    end
+
+    it 'should set the callback_path with script_name if present' do
+      allow(subject).to receive(:script_name).and_return('/api/v1')
+      expect(subject.callback_path).to eq('/api/v1/auth/microsoft_graph/callback')
     end
   end
 

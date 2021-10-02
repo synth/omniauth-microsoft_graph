@@ -34,6 +34,8 @@ Just add {login_hint: "email@example.com"} to your url generation to form:
 ```ruby
 /auth/microsoft_graph?login_hint=email@example.com
 ```
+### Upgrading to 1.0.0
+This version requires OmniAuth v2. If you are using Rails, you will need to include or upgrade `omniauth-rails_csrf_protection`. If you upgrade and get an error in your logs complaining about "authenticity error" or similiar, make sure to do `bundle update omniauth-rails_csrf_protection`
 
 ## Contributing
 

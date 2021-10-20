@@ -89,7 +89,7 @@ module OmniAuth
             verifier = body && body['code']
             client_get_token(verifier, '/auth/microsoft_graph/callback') if verifier
           rescue JSON::ParserError => e
-            warn "[omniauth google-oauth2] JSON parse error=#{e}"
+            warn "[omniauth microsoft_graph] JSON parse error=#{e}"
           end
         end
       end

@@ -272,7 +272,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
 
     context 'with verified email' do
       let(:response_hash) do
-        { mail: 'something@domain.invalid' }
+        { userPrincipalName: 'something@domain.invalid' }
       end
 
       it 'should return equal email ' do

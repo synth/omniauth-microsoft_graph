@@ -267,7 +267,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
         end
       end
     end
-    let(:access_token) { OAuth2::AccessToken.from_hash(client, {}) }
+    let(:access_token) { OAuth2::AccessToken.from_hash(client, { 'access_token' => 'a' }) }
     before { allow(subject).to receive(:access_token).and_return(access_token) }
 
     context 'with verified email' do
@@ -291,7 +291,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
         end
       end
     end
-    let(:access_token) { OAuth2::AccessToken.from_hash(client, {}) }
+    let(:access_token) { OAuth2::AccessToken.from_hash(client, { 'access_token' => 'a' }) }
 
     before { allow(subject).to receive(:access_token).and_return(access_token) }
 

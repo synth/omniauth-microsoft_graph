@@ -22,6 +22,8 @@ Or install it yourself as:
 
 ## Usage
 
+Register a new app in the [Azure Portal / App registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) to get the `AZURE_APPLICATION_CLIENT_ID` and `AZURE_APPLICATION_CLIENT_SECRET` below.
+
 #### Configuration
 ```ruby
 Rails.application.config.middleware.use OmniAuth::Builder do

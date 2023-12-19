@@ -22,6 +22,7 @@ module OmniAuth
 
       option :scope, DEFAULT_SCOPE
       option :authorized_client_ids, []
+      option :skip_domain_verification, false
 
       uid { raw_info["id"] }
 
@@ -43,6 +44,12 @@ module OmniAuth
         }
       end
 
+      def auth_hash
+        super.tap do |ah|
+          verify_email(ah, access_token)
+        end
+      end
+
       def authorize_params
         super.tap do |params|
           options[:authorize_options].each do |k|
@@ -54,7 +61,7 @@ module OmniAuth
 
           session['omniauth.state'] = params[:state] if params[:state]
         end
-      end     
+      end
 
       def raw_info
         @raw_info ||= access_token.get('https://graph.microsoft.com/v1.0/me').parsed
@@ -62,7 +69,7 @@ module OmniAuth
 
       def callback_url
         options[:callback_url] || full_host + script_name + callback_path
-      end  
+      end
 
       def custom_build_access_token
         access_token = get_access_token(request)
@@ -119,7 +126,11 @@ module OmniAuth
         raw_response = client.request(:get, 'https://graph.microsoft.com/v1.0/me',
                                       params: { access_token: access_token }).parsed
         (raw_response['aud'] == options.client_id) || options.authorized_client_ids.include?(raw_response['aud'])
-      end              
+      end
+
+      def verify_email(auth_hash, access_token)
+        OmniAuth::MicrosoftGraph::DomainVerifier.verify!(auth_hash, access_token, options)
+      end
     end
   end
 end

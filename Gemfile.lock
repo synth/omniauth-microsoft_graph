@@ -5,6 +5,7 @@ PATH
       jwt (~> 2.0)
       omniauth (~> 2.0)
       omniauth-oauth2 (~> 1.8.0)
+      uri (~> 0.13)
 
 GEM
   remote: https://rubygems.org/
@@ -74,6 +75,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-23
+  x86_64-linux
 
 DEPENDENCIES
   mocha (~> 0)

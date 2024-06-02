@@ -9,6 +9,7 @@ module OmniAuth
     # https://www.descope.com/blog/post/noauth
     # https://clerk.com/docs/authentication/social-connections/microsoft#stay-secure-against-the-n-o-auth-vulnerability
     OIDC_CONFIG_URL = 'https://login.microsoftonline.com/organizations/v2.0/.well-known/openid-configuration'
+    COMMON_JWKS_URL = 'https://login.microsoftonline.com/common/discovery/v2.0/keys'
 
     class DomainVerificationError < OmniAuth::Error; end
 
@@ -62,13 +63,25 @@ module OmniAuth
       def domain_verified_jwt_claim
         oidc_config = access_token.get(OIDC_CONFIG_URL).parsed
         algorithms = oidc_config['id_token_signing_alg_values_supported']
-        keys = JWT::JWK::Set.new(access_token.get(oidc_config['jwks_uri']).parsed)
-        decoded_token = JWT.decode(id_token, nil, true, algorithms: algorithms, jwks: keys)
+        jwks = get_jwks(oidc_config)
+        decoded_token = JWT.decode(id_token, nil, true, algorithms: algorithms, jwks: jwks)
+        xms_edov_valid?(decoded_token)
+      rescue JWT::VerificationError, ::OAuth2::Error
+        false
+      end
+
+      def xms_edov_valid?(decoded_token)
         # https://github.com/MicrosoftDocs/azure-docs/issues/111425#issuecomment-1761043378
         # Comments seemed to indicate the value is not consistent
         ['1', 1, 'true', true].include?(decoded_token.first['xms_edov'])
-      rescue JWT::VerificationError, ::OAuth2::Error
-        false
+      end
+
+      def get_jwks(oidc_config)
+        # Depending on the tenant, the JWKS endpoint might be different. We need to
+        # consider both the JWKS from the OIDC configuration and the common JWKS endpoint.
+        oidc_config_jwk_keys = access_token.get(oidc_config['jwks_uri']).parsed[:keys]
+        common_jwk_keys = access_token.get(COMMON_JWKS_URL).parsed[:keys]
+        JWT::JWK::Set.new(oidc_config_jwk_keys + common_jwk_keys)
       end
 
       def verification_error_message

@@ -41,34 +41,65 @@ RSpec.describe OmniAuth::MicrosoftGraph::DomainVerifier do
     end
 
     context 'when the ID token indicates domain verification' do
-      # Sign a fake ID token with our own local key
-      let(:mock_key) do
-        optional_parameters = { kid: 'mock-kid', use: 'sig', alg: 'RS256' }
+      let(:mock_oidc_key) do
+        optional_parameters = { kid: 'mock_oidc_key', use: 'sig', alg: 'RS256' }
         JWT::JWK.new(OpenSSL::PKey::RSA.new(2048), optional_parameters)
       end
-      let(:id_token) do
-        payload = { email: email, xms_edov: true }
-        JWT.encode(payload, mock_key.signing_key, mock_key[:alg], kid: mock_key[:kid])
+
+      let(:mock_common_key) do
+        optional_parameters = { kid: 'mock_common_key', use: 'sig', alg: 'RS256' }
+        JWT::JWK.new(OpenSSL::PKey::RSA.new(2048), optional_parameters)
       end
 
-      # Mock the API responses to return the local key
+      # Mock the API responses to return the mock keys
       before do
         allow(access_token).to receive(:get)
           .with(OmniAuth::MicrosoftGraph::OIDC_CONFIG_URL)
           .and_return(
-            double('OAuth2::Response', parsed: {
-              'id_token_signing_alg_values_supported' => ['RS256'],
-              'jwks_uri' => 'https://example.com/jwks-keys'
-            })
+            double(
+              'OAuth2::Response',
+              parsed: {
+                'id_token_signing_alg_values_supported' => ['RS256'],
+                'jwks_uri' => 'https://example.com/jwks-keys',
+              }
+            )
           )
         allow(access_token).to receive(:get)
           .with('https://example.com/jwks-keys')
           .and_return(
-            double('OAuth2::Response', parsed: JWT::JWK::Set.new(mock_key).export)
+            double(
+              'OAuth2::Response',
+              parsed: JWT::JWK::Set.new(mock_oidc_key).export
+            )
+          )
+        allow(access_token).to receive(:get)
+          .with(OmniAuth::MicrosoftGraph::COMMON_JWKS_URL)
+          .and_return(
+            double(
+              'OAuth2::Response',
+              parsed: JWT::JWK::Set.new(mock_common_key).export,
+              body: JWT::JWK::Set.new(mock_common_key).export.to_json
+            )
           )
       end
 
-      it { is_expected.to be_truthy }
+      context 'when the kid exists in the oidc key' do
+        let(:id_token) do
+          payload = { email: email, xms_edov: true }
+          JWT.encode(payload, mock_oidc_key.signing_key, mock_oidc_key[:alg], kid: mock_oidc_key[:kid])
+        end
+
+        it { is_expected.to be_truthy }
+      end
+
+      context "when the kid exists in the common key" do
+        let(:id_token) do
+          payload = { email: email, xms_edov: true }
+          JWT.encode(payload, mock_common_key.signing_key, mock_common_key[:alg], kid: mock_common_key[:kid])
+        end
+
+        it { is_expected.to be_truthy }
+      end
     end
 
     context 'when all verification strategies fail' do

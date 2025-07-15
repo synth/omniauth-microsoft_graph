@@ -10,7 +10,7 @@ client_id = ENV['AZURE_APPLICATION_CLIENT_ID']
 secret = ENV['AZURE_APPLICATION_CLIENT_SECRET']
 
 use Rack::Session::Cookie
-use OmniAuth::Builder do
+use Omniauth::Builder do
   provider :microsoft_graph, client_id, secret
 end
 

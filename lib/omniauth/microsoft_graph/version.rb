@@ -1,5 +1,5 @@
 module Omniauth
   module MicrosoftGraph
-    VERSION = "2.0.2"
+    VERSION = "0.3.3"
   end
 end

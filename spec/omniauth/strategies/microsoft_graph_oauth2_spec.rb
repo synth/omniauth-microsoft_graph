@@ -282,7 +282,12 @@ describe OmniAuth::Strategies::MicrosoftGraph do
 
     context 'when email verification fails' do
       let(:response_hash) { { mail: 'something@domain.invalid' } }
-      let(:error) { OmniAuth::MicrosoftGraph::DomainVerificationError.new }
+      let(:error) do
+        OmniAuth::Strategies::OAuth2::CallbackError.new(
+          :domain_verification_failed,
+          'Domain verification failed'
+        )
+      end
 
       before do
         allow(OmniAuth::MicrosoftGraph::DomainVerifier).to receive(:verify!).and_raise(error)

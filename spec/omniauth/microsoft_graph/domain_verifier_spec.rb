@@ -105,8 +105,11 @@ RSpec.describe OmniAuth::MicrosoftGraph::DomainVerifier do
     context 'when all verification strategies fail' do
       before { allow(access_token).to receive(:get).and_raise(::OAuth2::Error.new('whoops')) }
 
-      it 'raises a DomainVerificationError' do
-        expect { result }.to raise_error OmniAuth::MicrosoftGraph::DomainVerificationError
+      it 'raises a CallbackError with domain_verification_failed' do
+        expect { result }.to raise_error(OmniAuth::Strategies::OAuth2::CallbackError) do |error|
+          expect(error.error).to eq(:domain_verification_failed)
+          expect(error.error_reason).to include('not a verified domain')
+        end
       end
     end
   end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
+
 require 'jwt' # for token signature validation
-require 'omniauth' # to inherit from OmniAuth::Error
+require 'omniauth-oauth2' # to use CallbackError
 require 'oauth2' # to rescue OAuth2::Error
 
 module OmniAuth
@@ -10,8 +11,6 @@ module OmniAuth
     # https://clerk.com/docs/authentication/social-connections/microsoft#stay-secure-against-the-n-o-auth-vulnerability
     OIDC_CONFIG_URL = 'https://login.microsoftonline.com/organizations/v2.0/.well-known/openid-configuration'
     COMMON_JWKS_URL = 'https://login.microsoftonline.com/common/discovery/v2.0/keys'
-
-    class DomainVerificationError < OmniAuth::Error; end
 
     class DomainVerifier
       def self.verify!(auth_hash, access_token, options)
@@ -41,7 +40,13 @@ module OmniAuth
           skip_verification == true ||
           (skip_verification.is_a?(Array) && skip_verification.include?(email_domain)) ||
           domain_verified_jwt_claim
-        raise DomainVerificationError, verification_error_message
+
+        # Use CallbackError to ensure the error is properly caught by the callback_phase
+        # rescue clause and converted to an OmniAuth failure instead of bubbling up as a 500 error.
+        raise OmniAuth::Strategies::OAuth2::CallbackError.new(
+          :domain_verification_failed,
+          verification_error_message
+        )
       end
 
       private

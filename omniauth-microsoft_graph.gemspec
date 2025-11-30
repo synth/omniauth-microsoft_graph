@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency 'jwt', '~> 2.0'
+  spec.add_runtime_dependency 'jwt', '>= 2.0', '< 4.0'
   spec.add_runtime_dependency 'omniauth', '~> 2.0'
   spec.add_runtime_dependency 'omniauth-oauth2', '~> 1.8.0'
   spec.add_development_dependency "sinatra", '~> 2.2'

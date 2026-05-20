@@ -28,6 +28,13 @@ RSpec.describe OmniAuth::MicrosoftGraph::DomainVerifier do
       it { is_expected.to be_truthy }
     end
 
+    context 'when email domain and userPrincipalName domain match but have different casing' do
+      let(:email) { 'foo@example.com' }
+      let(:upn) { 'bar@EXAMPLE.COM' }
+
+      it { is_expected.to be_truthy }
+    end
+
     context 'when domain validation is disabled' do
       let(:options) { super().merge(skip_domain_verification: true) }
 

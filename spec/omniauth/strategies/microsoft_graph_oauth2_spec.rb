@@ -315,11 +315,14 @@ describe OmniAuth::Strategies::MicrosoftGraph do
   end
 
   describe 'build_access_token' do
+    let(:body) { StringIO.new(%({"code":"json_access_token"})) }
+
     it 'should use a hybrid authorization request_uri if this is an AJAX request with a code parameter' do
       allow(request).to receive(:scheme).and_return('https')
       allow(request).to receive(:url).and_return('https://example.com')
       allow(request).to receive(:xhr?).and_return(true)
       allow(request).to receive(:params).and_return('code' => 'valid_code')
+      allow(request).to receive(:body).and_return(body)
 
       client = double(:client)
       auth_code = double(:auth_code)
@@ -337,6 +340,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
       allow(request).to receive(:url).and_return('https://example.com')
       allow(request).to receive(:xhr?).and_return(true)
       allow(request).to receive(:params).and_return('code' => 'valid_code', 'callback_url' => 'localhost')
+      allow(request).to receive(:body).and_return(body)
 
       client = double(:client)
       auth_code = double(:auth_code)
@@ -354,6 +358,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
       allow(request).to receive(:url).and_return('https://example.com')
       allow(request).to receive(:xhr?).and_return(false)
       allow(request).to receive(:params).and_return('code' => 'valid_code', 'callback_url' => 'callback_url')
+      allow(request).to receive(:body).and_return(body)
 
       client = double(:client)
       auth_code = double(:auth_code)
@@ -370,6 +375,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
       allow(request).to receive(:url).and_return('https://example.com')
       allow(request).to receive(:xhr?).and_return(false)
       allow(request).to receive(:params).and_return('access_token' => 'valid_access_token')
+      allow(request).to receive(:body).and_return(body)
       expect(subject).to receive(:verify_token).with('valid_access_token').and_return true
       expect(subject).to receive(:client).and_return(:client)
 
@@ -380,7 +386,6 @@ describe OmniAuth::Strategies::MicrosoftGraph do
     end
 
     it 'reads the code from a json request body' do
-      body = StringIO.new(%({"code":"json_access_token"}))
       client = double(:client)
       auth_code = double(:auth_code)
 
@@ -403,6 +408,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
       allow(request).to receive(:xhr?).and_return(false)
       allow(request).to receive(:params).and_return('code' => 'valid_code')
       allow(request).to receive(:content_type).and_return('application/x-www-form-urlencoded')
+      allow(request).to receive(:body).and_return(body)
 
       client = double(:client)
       auth_code = double(:auth_code)

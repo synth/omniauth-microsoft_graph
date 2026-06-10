@@ -47,6 +47,24 @@ RSpec.describe OmniAuth::MicrosoftGraph::DomainVerifier do
       it { is_expected.to be_truthy }
     end
 
+    context 'when the email is missing (e.g. a personal Microsoft account)' do
+      let(:email) { nil }
+
+      context 'when domain validation is disabled' do
+        let(:options) { super().merge(skip_domain_verification: true) }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when all verification strategies fail' do
+        before { allow(access_token).to receive(:get).and_raise(::OAuth2::Error.new('whoops')) }
+
+        it 'raises a DomainVerificationError' do
+          expect { result }.to raise_error OmniAuth::MicrosoftGraph::DomainVerificationError
+        end
+      end
+    end
+
     context 'when the ID token indicates domain verification' do
       let(:mock_oidc_key) do
         optional_parameters = { kid: 'mock_oidc_key', use: 'sig', alg: 'RS256' }

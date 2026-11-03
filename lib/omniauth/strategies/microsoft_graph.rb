@@ -1,4 +1,5 @@
 require 'omniauth-oauth2'
+require 'jwt'
 
 module OmniAuth
   module Strategies
@@ -8,6 +9,7 @@ module OmniAuth
       DEFAULT_SCOPE = 'offline_access openid email profile User.Read'.freeze
       YAMMER_PROFILE_URL = 'https://www.yammer.com/api/v1/users/current.json'
       MICROSOFT_GRAPH_PROFILE_URL = 'https://graph.microsoft.com/v1.0/me'
+      OUTLOOK_RESOURCE_URL = %r{\Ahttps?://outlook\.office(365)?\.com/}i
 
       option :name, :microsoft_graph
 
@@ -66,7 +68,7 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= access_token.get(profile_endpoint).parsed
+        @raw_info ||= profile_endpoint ? access_token.get(profile_endpoint).parsed : access_token_claims
       end
 
       def callback_url
@@ -83,20 +85,45 @@ module OmniAuth
       alias build_access_token custom_build_access_token
 
       def profile_endpoint
-        @profile_endpoint ||= MICROSOFT_GRAPH_PROFILE_URL
+        defined?(@profile_endpoint) ? @profile_endpoint : MICROSOFT_GRAPH_PROFILE_URL
       end
 
+      # Returns nil when the token can only be used for Outlook resources
+      # (e.g. https://outlook.office.com/SMTP.Send): Graph rejects such a token
+      # because of its audience, so the profile is read from its claims instead.
       def determine_profile_endpoint(request)
-        scope = request&.env&.dig('omniauth.params', 'scope')
+        scope = request&.env&.dig('omniauth.params', 'scope') || options.scope
 
         if scope&.include?('yammer')
           YAMMER_PROFILE_URL
+        elsif outlook_resource_scope?(scope)
+          nil
         else
           MICROSOFT_GRAPH_PROFILE_URL
         end
       end
 
       private
+
+      def outlook_resource_scope?(scope)
+        scopes = scope.to_s.split(/[\s,]+/) - BASE_SCOPES
+        scopes.any? && scopes.all? { |s| s.match?(OUTLOOK_RESOURCE_URL) }
+      end
+
+      # The token was just received from Microsoft's token endpoint over TLS,
+      # so its claims are decoded without verifying the signature (Microsoft
+      # does not publish keys to verify tokens issued for its own APIs).
+      def access_token_claims
+        claims = JWT.decode(access_token.token, nil, false).first
+        claims.merge(
+          'id' => claims['oid'],
+          'givenName' => claims['given_name'],
+          'surname' => claims['family_name'],
+          'displayName' => claims['name'],
+          'mail' => claims['email'],
+          'userPrincipalName' => claims['upn']
+        )
+      end
 
       def get_access_token(request)
         verifier = request.params['code']

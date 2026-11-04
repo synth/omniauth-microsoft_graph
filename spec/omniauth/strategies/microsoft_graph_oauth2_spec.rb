@@ -535,4 +535,75 @@ describe OmniAuth::Strategies::MicrosoftGraph do
       end
     end
   end
+
+  describe 'Outlook resource tokens' do
+    describe '#determine_profile_endpoint' do
+      let(:request) { double('Request', env: request_env) }
+      let(:request_env) { {} }
+
+      context 'when the request scope only contains Outlook resources' do
+        let(:request_env) { { 'omniauth.params' => { 'scope' => 'offline_access https://outlook.office.com/SMTP.Send' } } }
+
+        it 'returns no profile endpoint' do
+          expect(subject.determine_profile_endpoint(request)).to be_nil
+        end
+      end
+
+      context 'when the configured scope only contains Outlook resources' do
+        before { @options = { scope: 'offline_access https://outlook.office.com/IMAP.AccessAsUser.All https://outlook.office.com/SMTP.Send' } }
+
+        it 'returns no profile endpoint' do
+          expect(subject.determine_profile_endpoint(request)).to be_nil
+        end
+      end
+
+      context 'when the scope mixes Outlook and Graph resources' do
+        let(:request_env) { { 'omniauth.params' => { 'scope' => 'https://outlook.office.com/SMTP.Send User.Read' } } }
+
+        it 'returns Microsoft Graph profile URL' do
+          expect(subject.determine_profile_endpoint(request)).to eq('https://graph.microsoft.com/v1.0/me')
+        end
+      end
+
+      context 'when the scope only contains base scopes' do
+        let(:request_env) { { 'omniauth.params' => { 'scope' => 'openid profile' } } }
+
+        it 'returns Microsoft Graph profile URL' do
+          expect(subject.determine_profile_endpoint(request)).to eq('https://graph.microsoft.com/v1.0/me')
+        end
+      end
+    end
+
+    describe '#raw_info' do
+      let(:claims) do
+        {
+          'oid' => 'object-id',
+          'given_name' => 'Jane',
+          'family_name' => 'Doe',
+          'name' => 'Jane Doe',
+          'upn' => 'jane@example.com'
+        }
+      end
+      let(:client) { OAuth2::Client.new('abc', 'def') }
+      let(:access_token) { OAuth2::AccessToken.new(client, JWT.encode(claims, 'secret', 'HS256')) }
+
+      before do
+        allow(subject).to receive(:access_token).and_return(access_token)
+        subject.instance_variable_set(:@profile_endpoint, nil)
+      end
+
+      it 'reads the profile from the access token claims without calling an API' do
+        expect(access_token).not_to receive(:get)
+        expect(subject.raw_info).to include(claims)
+        expect(subject.uid).to eq('object-id')
+        expect(subject.info).to include(
+          'first_name' => 'Jane',
+          'last_name' => 'Doe',
+          'name' => 'Jane Doe',
+          'nickname' => 'Jane Doe'
+        )
+        expect(subject.raw_info['userPrincipalName']).to eq('jane@example.com')
+      end
+    end
+  end
 end

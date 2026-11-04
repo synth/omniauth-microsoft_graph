@@ -37,7 +37,7 @@ module OmniAuth
         # This means while it's not suitable for consistently identifying a user
         # (the domain might change), it is suitable for verifying membership in
         # a given domain.
-        return true if email_domain.casecmp?(upn_domain) ||
+        return true if email_domain&.casecmp?(upn_domain) ||
           skip_verification == true ||
           (skip_verification.is_a?(Array) && skip_verification.include?(email_domain)) ||
           domain_verified_jwt_claim
@@ -61,6 +61,10 @@ module OmniAuth
       # To get to it, we need to decode the ID token with the key material from Microsoft's
       # OIDC configuration endpoint, and inspect it for the claim in question.
       def domain_verified_jwt_claim
+        # The ID token is missing if the token request did not include the
+        # `openid` scope or the tenant does not issue one.
+        return false unless id_token
+
         oidc_config = access_token.get(OIDC_CONFIG_URL).parsed
         algorithms = oidc_config['id_token_signing_alg_values_supported']
         jwks = get_jwks(oidc_config)

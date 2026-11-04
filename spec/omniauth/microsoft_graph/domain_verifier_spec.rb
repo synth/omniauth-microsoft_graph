@@ -39,6 +39,12 @@ RSpec.describe OmniAuth::MicrosoftGraph::DomainVerifier do
       let(:options) { super().merge(skip_domain_verification: true) }
 
       it { is_expected.to be_truthy }
+
+      context 'and the auth hash has no email' do
+        let(:email) { nil }
+
+        it { is_expected.to be_truthy }
+      end
     end
 
     context 'when the email domain is explicitly permitted' do
@@ -109,7 +115,18 @@ RSpec.describe OmniAuth::MicrosoftGraph::DomainVerifier do
       end
     end
 
+    context 'when there is no email and no ID token' do
+      let(:email) { nil }
+
+      it 'raises a DomainVerificationError without fetching the OIDC configuration' do
+        expect(access_token).not_to receive(:get)
+        expect { result }.to raise_error OmniAuth::MicrosoftGraph::DomainVerificationError
+      end
+    end
+
     context 'when all verification strategies fail' do
+      let(:id_token) { 'not-a-jwt' }
+
       before { allow(access_token).to receive(:get).and_raise(::OAuth2::Error.new('whoops')) }
 
       it 'raises a DomainVerificationError' do

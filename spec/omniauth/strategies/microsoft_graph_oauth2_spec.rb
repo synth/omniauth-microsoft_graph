@@ -23,10 +23,14 @@ describe OmniAuth::Strategies::MicrosoftGraph do
 
   before do
     OmniAuth.config.test_mode = true
+    # omniauth-oauth2 >= 1.9 resolves callback_url in authorize_params, which
+    # would otherwise derive the host from the (doubled) request.
+    OmniAuth.config.full_host = 'https://example.com'
   end
 
   after do
     OmniAuth.config.test_mode = false
+    OmniAuth.config.full_host = nil
   end
 
   describe '#client_options' do
